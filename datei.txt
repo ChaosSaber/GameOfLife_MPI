@@ -1,0 +1,69 @@
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0  10656     0 ?        Ss   00:01   0:02 init [2]         
+root         2  0.0  0.0      0     0 ?        S    00:01   0:00 [kthreadd]
+root         3  0.0  0.0      0     0 ?        S    00:01   0:10 [ksoftirqd/0]
+root         6  0.0  0.0      0     0 ?        S    00:01   0:01 [migration/0]
+root         7  0.0  0.0      0     0 ?        S    00:01   0:01 [watchdog/0]
+root         8  0.0  0.0      0     0 ?        S    00:01   0:01 [migration/1]
+root        10  0.0  0.0      0     0 ?        S    00:01   0:02 [ksoftirqd/1]
+root        12  0.0  0.0      0     0 ?        S    00:01   0:01 [watchdog/1]
+root        13  0.0  0.0      0     0 ?        S<   00:01   0:00 [cpuset]
+root        14  0.0  0.0      0     0 ?        S<   00:01   0:00 [khelper]
+root        15  0.0  0.0      0     0 ?        S    00:01   0:00 [kdevtmpfs]
+root        16  0.0  0.0      0     0 ?        S<   00:01   0:00 [netns]
+root        17  0.0  0.0      0     0 ?        S    00:01   0:01 [sync_supers]
+root        18  0.0  0.0      0     0 ?        S    00:01   0:00 [bdi-default]
+root        19  0.0  0.0      0     0 ?        S<   00:01   0:00 [kintegrityd]
+root        20  0.0  0.0      0     0 ?        S<   00:01   0:00 [kblockd]
+root        22  0.0  0.0      0     0 ?        S    00:01   0:00 [khungtaskd]
+root        23  0.3  0.0      0     0 ?        S    00:01   3:30 [kswapd0]
+root        24  0.0  0.0      0     0 ?        SN   00:01   0:00 [ksmd]
+root        25  0.0  0.0      0     0 ?        S    00:01   0:00 [fsnotify_mark]
+root        26  0.0  0.0      0     0 ?        S<   00:01   0:00 [crypto]
+root       100  0.0  0.0      0     0 ?        S    00:01   0:00 [khubd]
+root       101  0.0  0.0      0     0 ?        S<   00:01   0:00 [ata_sff]
+root       118  0.0  0.0      0     0 ?        S    00:01   0:00 [scsi_eh_0]
+root       119  0.0  0.0      0     0 ?        S    00:01   0:00 [scsi_eh_1]
+root       121  0.0  0.0      0     0 ?        S    00:01   0:00 [kworker/u:1]
+root       122  0.0  0.0      0     0 ?        S    00:01   0:00 [scsi_eh_2]
+root       123  0.0  0.0      0     0 ?        S    00:01   0:00 [kworker/u:2]
+root       134  0.0  0.0      0     0 ?        S    00:01   0:00 [kworker/1:2]
+root       155  0.0  0.0      0     0 ?        S    00:01   0:07 [jbd2/sda1-8]
+root       156  0.0  0.0      0     0 ?        S<   00:01   0:00 [ext4-dio-unwrit]
+root       299  0.0  0.0  21228   436 ?        Ss   00:01   0:00 udevd --daemon
+root       415  0.0  0.0      0     0 ?        S<   00:01   0:00 [kpsmoused]
+root       421  0.0  0.0      0     0 ?        S<   00:01   0:00 [iprt]
+root       802  0.0  0.0      0     0 ?        S<   04:43   0:00 [xfs_mru_cache]
+root       803  0.0  0.0      0     0 ?        S<   04:43   0:00 [xfslogd]
+root       804  0.0  0.0      0     0 ?        S<   04:43   0:00 [xfsdatad]
+root       805  0.0  0.0      0     0 ?        S<   04:43   0:00 [xfsconvertd]
+statd     1649  0.0  0.0  23344    12 ?        Ss   00:01   0:00 /sbin/rpc.statd
+root      1659  0.0  0.0   9960     4 ?        Ss   00:01   0:00 dhclient -v -pf /run/dhclient.eth0.pid -lf /var/lib/dhcp/dhclient.eth0.leases eth0
+root      1671  0.0  0.0      0     0 ?        S<   00:01   0:00 [rpciod]
+root      1676  0.0  0.0      0     0 ?        S<   00:01   0:00 [nfsiod]
+root      1683  0.0  0.0  25292     0 ?        Ss   00:01   0:00 /usr/sbin/rpc.idmapd
+root      2034  0.0  0.0  23608    12 ?        Sl   00:01   0:23 /usr/sbin/VBoxService
+root      2193  0.0  0.0  20380   176 ?        Ss   00:01   0:00 /usr/sbin/cron
+104       2233  0.0  0.0  29804     4 ?        Ss   00:01   0:00 /usr/bin/dbus-daemon --system
+root      2514  0.0  0.0  52368     8 tty1     Ss   00:02   0:00 /bin/login --                 
+root      2515  0.0  0.0  16256     8 tty2     Ss+  00:02   0:00 /sbin/getty 38400 tty2
+root      2516  0.0  0.0  16256     8 tty3     Ss+  00:02   0:00 /sbin/getty 38400 tty3
+root      2517  0.0  0.0  16256     8 tty4     Ss+  00:02   0:00 /sbin/getty 38400 tty4
+root      2518  0.0  0.0  16256     8 tty5     Ss+  00:02   0:00 /sbin/getty 38400 tty5
+root      2519  0.0  0.0  16256     8 tty6     Ss+  00:02   0:00 /sbin/getty 38400 tty6
+student   2520  0.0  0.0  20724     8 tty1     S    00:02   0:00 -bash
+root      2610  0.0  0.0  37192     4 tty1     S    00:20   0:00 su
+root      2611  0.0  0.3  19836  1544 tty1     S    00:20   0:04 bash
+root      2860  0.0  0.0  52648   276 ?        Sl   04:44   0:00 /usr/sbin/rsyslogd -c5
+daemon    2910  0.0  0.0  16680     0 ?        Ss   04:44   0:00 /usr/sbin/atd
+101       3605  0.0  0.0  46824   124 ?        Ss   04:44   0:00 /usr/sbin/exim4 -bd -q30m
+root      4250  0.0  0.0  49948     4 ?        Ss   04:44   0:00 /usr/sbin/sshd
+root      4335  0.0  0.0   4124     0 ?        Ss   04:44   0:02 /usr/sbin/acpid
+root      8631  0.0  0.0  18980    52 ?        Ss   04:47   0:00 /sbin/rpcbind -w
+root     12140  0.0  0.1  21224   784 ?        S    13:05   0:00 udevd --daemon
+root     12321  0.0  0.0      0     0 ?        S    14:05   0:05 [kworker/0:2]
+root     12428  0.0  0.1  21224   808 ?        S    15:06   0:00 udevd --daemon
+root     12574  0.0  0.0      0     0 ?        S    06:50   0:01 [kworker/1:0]
+root     12799  0.0  0.0      0     0 ?        S    16:51   0:01 [kworker/0:0]
+root     12926  0.0  0.0      0     0 ?        S    18:10   0:00 [flush-8:0]
+root     12980  0.0  0.2  16844  1268 tty1     R+   18:14   0:00 ps aux
