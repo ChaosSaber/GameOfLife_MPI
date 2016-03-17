@@ -4,6 +4,7 @@
 #include <endian.h>
 #include "mpi.h"
 
+
 #define calcIndex(width, x,y)  ((y)*(width) + (x))
 
 
@@ -65,6 +66,7 @@ int coutLifingsPeriodic(unsigned* currentfield, unsigned* upperGhostLayer, unsig
    int n = 0;
    for (int y1 = y - 1; y1 <= y + 1; y1++) 
      for (int x1 = x - 1; x1 <= x + 1; x1++) 
+     {
        if (y1 < 0 && upperGhostLayer[x1]) 
        {
          n++;
@@ -77,21 +79,27 @@ int coutLifingsPeriodic(unsigned* currentfield, unsigned* upperGhostLayer, unsig
        {
         n++;
        }
+     }
 
    return n;
 }
  
 int evolve(unsigned* currentfield, unsigned* upperGhostLayer, unsigned* lowerGhostLayer, unsigned* newfield, int w, int h) 
 {
+  
   int changes = 0;
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {
+  for (int y = 0; y < h; y++) 
+  {
+    for (int x = 0; x < w; x++) 
+    {
       int n = coutLifingsPeriodic(currentfield, upperGhostLayer, lowerGhostLayer, x , y, w, h);
-      if (currentfield[calcIndex(w, x,y)]) 
+      /*********************hier liegt irgendwo der Fehler************************
+      if (currentfield[calcIndex(w, x, y)]) 
         n--;
-      newfield[calcIndex(w, x,y)] = (n == 3 || (n == 2 && currentfield[calcIndex(w, x,y)]));   
-      if(newfield[calcIndex(w, x,y)] != currentfield[calcIndex(w, x,y)])
+      newfield[calcIndex(w, x, y)] = (n == 3 || (n == 2 && currentfield[calcIndex(w, x, y)]));   
+      if(newfield[calcIndex(w, x, y)] != currentfield[calcIndex(w, x, y)])
         changes++;
+      *********************hier liegt irgendwo der Fehler************************/
     }
   } 
   return changes;
@@ -109,39 +117,53 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
   unsigned *newfield     = calloc(w * h, sizeof(unsigned));
   unsigned *upperGhostLayer = calloc(w, sizeof(unsigned));
   unsigned *lowerGhostLayer = calloc(w, sizeof(unsigned));
-
+//printf("%d:upper-/ lowerGhostLayer erstellt\n", myrank);
+ /* for(int i = 0; i < w; i++)
+  {
+    upperGhostLayer[i] = 0;
+    lowerGhostLayer[i] = 0;
+  }
+  printf("upper-/lowerGhostLayer mit 0 initialisiert\n");
+*/
   int links,rechts;
   MPI_Cart_shift(cart_comm, 0, 1, &links, &rechts);
-
+//printf("%d:linken und rechten Nachbar herausgefunden\n", myrank);
   MPI_Status *status = calloc(1, sizeof(MPI_Status));
   for (int t = 0; t < timesteps; t++) {
     //show(currentfield, w, h);
     writeVTK(currentfield, w, h, t, "out/output", myrank);
+//printf("%d:vtk-dateien geschrieben\n", myrank);
 
-
-    if (myrank % 2== 0)
+    if ((myrank % 2) == 0)
     {
 
    //  kommuniziere mit deinem Rechten 
+      //printf("%d sendrecv to/from %d\n", myrank, rechts);
       MPI_Sendrecv(currentfield + calcIndex(w, 0, h - 1), w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
      // kommuniziere mit deinem linken
+      //printf("%d sendrecv to/from %d\n", myrank, links);
       MPI_Sendrecv(currentfield + calcIndex(w, 0, 0), w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
     }
-    if(myrank & 2 == 1)
+    if((myrank % 2) == 1)
     {
    //   kommuniziere mit deinem linken
+      //printf("%d sendrecv to/from %d\n", myrank, links);
       MPI_Sendrecv(currentfield + calcIndex(w, 0, 0), w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
      // kommuniziere mit deinem rechten
+      //printf("%d sendrecv to/from %d\n", myrank, rechts);
         MPI_Sendrecv(currentfield + calcIndex(w, 0, h - 1), w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
     }
 
     int changes = evolve(currentfield, upperGhostLayer, lowerGhostLayer, newfield, w, h);
+    //int changes = 1;
+    //TODO changes, mit anderen kommunizieren
+    /*
     if (changes == 0) {
       sleep(3);
       break;
     }
+    */
     
-    //usleep(200000);
 
     //SWAP
     unsigned *temp = currentfield;
@@ -149,8 +171,10 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
     newfield = temp;
   }
   
-  free(currentfield);
+  //free(currentfield);
   free(newfield);
+  free(upperGhostLayer);
+  free(lowerGhostLayer);
 }
  
 int main(int c, char **v) {
@@ -162,25 +186,27 @@ int main(int c, char **v) {
 
   unsigned* initialField = calloc(w*h, sizeof(unsigned));
 
+//TODO sobald wir sicher sind das die Funktionen das richtige tun, diese Funktion wieder in die Game-Funktion verschieben
+  //myrank, dann auch in die Game-Funktion stecken
+  //evtl. MPI_Cart_create auch in die GameFunktion verschieben
   filling(initialField, w, h);
 
   MPI_Init(&c, &v);
-  MPI_Group MPI_GROUP_WORLD, not_group_world;
+  //MPI_Group MPI_GROUP_WORLD, not_group_world;
   MPI_Comm cart_comm;
-  MPI_Comm_group(MPI_COMM_WORLD, &MPI_GROUP_WORLD);
+  //MPI_Comm_group(MPI_COMM_WORLD, &MPI_GROUP_WORLD);
 
-  int process[]={0,1,2,3};
   int dims[1];
   int periodics[1];
   dims[0]=3;
   periodics[0]=1;
   MPI_Cart_create( MPI_COMM_WORLD, 1, dims, periodics, 0, &cart_comm);
-
-  int myrank;
+//printf("cart communicater created\n");
+  int myrank = 1;
   MPI_Comm_rank(cart_comm, &myrank);
-
-  int links,rechts;
-  MPI_Cart_shift(cart_comm, 0, 1, &links, &rechts);
+//printf("%d:rank im cart_communicater erfahren\n", myrank);
+  //int links,rechts;
+  //MPI_Cart_shift(cart_comm, 0, 1, &links, &rechts);
 
   /*if(myrank == 0)
      printf("Process %d: keinen linken Nachbar, rechts: %d, Gebietsgröße: %d\n",myrank, rechts,  h*w/dims[0]);
@@ -192,4 +218,5 @@ int main(int c, char **v) {
   int blockHeight = h/dims[0];
   game(w, h/dims[0], timesteps, myrank, &initialField[myrank * blockHeight * w], cart_comm);
   MPI_Finalize();
+  free(initialField);
 }

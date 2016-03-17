@@ -33,3 +33,4 @@ out/
 
 # Debug files
 *.dSYM/
+log.txt
