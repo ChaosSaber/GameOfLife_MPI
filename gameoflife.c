@@ -47,7 +47,7 @@ void writeVTK(unsigned* currentfield, int w, int h, int t, char* prefix, int myr
     fprintf(outfile,"DATASET STRUCTURED_POINTS\n");     
     fprintf(outfile,"DIMENSIONS %d %d %d \n",  w, h, 1);        
     fprintf(outfile,"SPACING 1.0 1.0 1.0\n");//or ASPECT_RATIO                            
-    fprintf(outfile,"ORIGIN %d %d 0\n", 0, (h - 1) * myrank );                                              
+    fprintf(outfile,"ORIGIN %d %d 0\n", 0, (h - 0) * myrank );                                              
     fprintf(outfile,"POINT_DATA %d\n", w*h);
     fprintf(outfile,"SCALARS data float 1\n");
     fprintf(outfile,"LOOKUP_TABLE default\n");
@@ -67,13 +67,15 @@ int coutLifingsPeriodic(unsigned* currentfield, unsigned* upperGhostLayer, unsig
    for (int y1 = y - 1; y1 <= y + 1; y1++) 
      for (int x1 = x - 1; x1 <= x + 1; x1++) 
      {
-       if (y1 < 0 && upperGhostLayer[x1]) 
+       if (y1 < 0) 
        {
-         n++;
+        if(upperGhostLayer[calcIndex(w, (x1 + w) % w, 0)])
+           n++;
        }
-       else if (y1 >= h && lowerGhostLayer[x1])
+       else if (y1 >= h)
        {
-        n++;
+        if(lowerGhostLayer[calcIndex(w, (x1 + w) % w, 0)])
+          n++;
        }
        else if (currentfield[calcIndex(w, (x1 + w) % w, (y1 + h) % h)])
        {
@@ -93,13 +95,11 @@ int evolve(unsigned* currentfield, unsigned* upperGhostLayer, unsigned* lowerGho
     for (int x = 0; x < w; x++) 
     {
       int n = coutLifingsPeriodic(currentfield, upperGhostLayer, lowerGhostLayer, x , y, w, h);
-      /*********************hier liegt irgendwo der Fehler************************
       if (currentfield[calcIndex(w, x, y)]) 
         n--;
       newfield[calcIndex(w, x, y)] = (n == 3 || (n == 2 && currentfield[calcIndex(w, x, y)]));   
       if(newfield[calcIndex(w, x, y)] != currentfield[calcIndex(w, x, y)])
         changes++;
-      *********************hier liegt irgendwo der Fehler************************/
     }
   } 
   return changes;
@@ -139,24 +139,25 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
 
    //  kommuniziere mit deinem Rechten 
       //printf("%d sendrecv to/from %d\n", myrank, rechts);
-      MPI_Sendrecv(currentfield + calcIndex(w, 0, h - 1), w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
+      MPI_Sendrecv(&currentfield[calcIndex(w, 0, h - 1)], w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
      // kommuniziere mit deinem linken
       //printf("%d sendrecv to/from %d\n", myrank, links);
-      MPI_Sendrecv(currentfield + calcIndex(w, 0, 0), w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
+      MPI_Sendrecv(&currentfield[calcIndex(w, 0, 0)], w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
     }
     if((myrank % 2) == 1)
     {
    //   kommuniziere mit deinem linken
       //printf("%d sendrecv to/from %d\n", myrank, links);
-      MPI_Sendrecv(currentfield + calcIndex(w, 0, 0), w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
+      MPI_Sendrecv(&currentfield[calcIndex(w, 0, 0)], w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
      // kommuniziere mit deinem rechten
       //printf("%d sendrecv to/from %d\n", myrank, rechts);
-        MPI_Sendrecv(currentfield + calcIndex(w, 0, h - 1), w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
+        MPI_Sendrecv(&currentfield[calcIndex(w, 0, h - 1)], w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
     }
 
     int changes = evolve(currentfield, upperGhostLayer, lowerGhostLayer, newfield, w, h);
     //int changes = 1;
     //TODO changes, mit anderen kommunizieren
+    //Idee. Process 0 erhält von allen anderen die changes und sendet das Ergebnis an alles anderen Processe zurück
     /*
     if (changes == 0) {
       sleep(3);
