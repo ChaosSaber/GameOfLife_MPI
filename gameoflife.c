@@ -159,10 +159,14 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
     //TODO changes, mit anderen kommunizieren
     //Idee. Process 0 erhält von allen anderen die changes und sendet das Ergebnis an alles anderen Processe zurück
 
-    int buff;
+    int changesall;
     int size = 0;
     MPI_Comm_size(cart_comm, &size);
 
+
+    MPI_Allreduce(&changes, &changesall, 1, MPI_INT, MPI_SUM, cart_comm);
+    
+/*
     if (myrank == 0)
     {
       for (int rank = 1; rank < size; rank++)
@@ -184,9 +188,9 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
       MPI_Bcast(&buff, 1, MPI_INT, 0, cart_comm);
       changes = buff;
     }
+*/
 
-
-    if (changes == 0) {
+    if (changesall == 0) {
       sleep(3);
       break;
     }
