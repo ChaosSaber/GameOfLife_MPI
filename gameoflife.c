@@ -158,14 +158,46 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
     //int changes = 1;
     //TODO changes, mit anderen kommunizieren
     //Idee. Process 0 erhält von allen anderen die changes und sendet das Ergebnis an alles anderen Processe zurück
-    /*
+
+    int *buff = calloc(1, sizeof(int));
+    MPI_Status status;
+    int size = 0;
+    MPI_Comm_size(cart_comm, &size);
+
+    if (myrank == 0)
+    {
+      for (int rank = 1; rank < size; rank++)
+      {
+        MPI_Recv(buff, 1, MPI_INT, rank, 2, cart_comm, &status);
+
+        changes += *buff;
+      }
+
+      *buff = changes;
+
+      for (int rank = 1; rank < size; rank++)
+      {
+        MPI_Send(buff, 1, MPI_INT, rank, 3, cart_comm);
+      }
+    }
+    else
+    {
+      *buff = changes;
+
+      MPI_Send(buff, 1, MPI_INT, 0, 2, cart_comm);
+
+      MPI_Recv(buff, 1, MPI_INT, 0, 3, cart_comm, &status);
+
+      changes = *buff;
+    }
+
+    free(buff);
+
     if (changes == 0) {
       sleep(3);
       break;
     }
-    */
     
-
     //SWAP
     unsigned *temp = currentfield;
     currentfield = newfield;
