@@ -128,7 +128,7 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
   int links,rechts;
   MPI_Cart_shift(cart_comm, 0, 1, &links, &rechts);
 //printf("%d:linken und rechten Nachbar herausgefunden\n", myrank);
-  MPI_Status *status = calloc(1, sizeof(MPI_Status));
+  MPI_Status status;
   for (int t = 0; t < timesteps; t++) {
     //show(currentfield, w, h);
     writeVTK(currentfield, w, h, t, "out/output", myrank);
@@ -139,19 +139,19 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
 
    //  kommuniziere mit deinem Rechten 
       //printf("%d sendrecv to/from %d\n", myrank, rechts);
-      MPI_Sendrecv(&currentfield[calcIndex(w, 0, h - 1)], w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
+      MPI_Sendrecv(&currentfield[calcIndex(w, 0, h - 1)], w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, &status);
      // kommuniziere mit deinem linken
       //printf("%d sendrecv to/from %d\n", myrank, links);
-      MPI_Sendrecv(&currentfield[calcIndex(w, 0, 0)], w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
+      MPI_Sendrecv(&currentfield[calcIndex(w, 0, 0)], w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, &status);
     }
     if((myrank % 2) == 1)
     {
    //   kommuniziere mit deinem linken
       //printf("%d sendrecv to/from %d\n", myrank, links);
-      MPI_Sendrecv(&currentfield[calcIndex(w, 0, 0)], w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, status);
+      MPI_Sendrecv(&currentfield[calcIndex(w, 0, 0)], w,  MPI_UNSIGNED, links, 1, upperGhostLayer, w, MPI_UNSIGNED, links, 1, cart_comm, &status);
      // kommuniziere mit deinem rechten
       //printf("%d sendrecv to/from %d\n", myrank, rechts);
-        MPI_Sendrecv(&currentfield[calcIndex(w, 0, h - 1)], w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, status);
+        MPI_Sendrecv(&currentfield[calcIndex(w, 0, h - 1)], w,  MPI_UNSIGNED, rechts, 1, lowerGhostLayer, w, MPI_UNSIGNED, rechts, 1, cart_comm, &status);
     }
 
     int changes = evolve(currentfield, upperGhostLayer, lowerGhostLayer, newfield, w, h);
@@ -159,8 +159,7 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
     //TODO changes, mit anderen kommunizieren
     //Idee. Process 0 erhält von allen anderen die changes und sendet das Ergebnis an alles anderen Processe zurück
 
-    int *buff = calloc(1, sizeof(int));
-    MPI_Status status;
+    int buff;
     int size = 0;
     MPI_Comm_size(cart_comm, &size);
 
@@ -168,30 +167,24 @@ void game(int w, int h, int timesteps, int myrank, unsigned* initialField, MPI_C
     {
       for (int rank = 1; rank < size; rank++)
       {
-        MPI_Recv(buff, 1, MPI_INT, rank, 2, cart_comm, &status);
+        MPI_Recv(&buff, 1, MPI_INT, rank, 2, cart_comm, &status);
 
-        changes += *buff;
+        changes += buff;
       }
 
-      *buff = changes;
+      buff = changes;
+      MPI_Bcast(&buff, 1, MPI_INT, 0, cart_comm);
 
-      for (int rank = 1; rank < size; rank++)
-      {
-        MPI_Send(buff, 1, MPI_INT, rank, 3, cart_comm);
-      }
     }
     else
     {
-      *buff = changes;
+      buff = changes;
 
-      MPI_Send(buff, 1, MPI_INT, 0, 2, cart_comm);
-
-      MPI_Recv(buff, 1, MPI_INT, 0, 3, cart_comm, &status);
-
-      changes = *buff;
+      MPI_Send(&buff, 1, MPI_INT, 0, 2, cart_comm);
+      MPI_Bcast(&buff, 1, MPI_INT, 0, cart_comm);
+      changes = buff;
     }
 
-    free(buff);
 
     if (changes == 0) {
       sleep(3);
