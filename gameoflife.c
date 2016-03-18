@@ -47,7 +47,7 @@ void writeVTK(unsigned* currentfield, int w, int h, int t, char* prefix, int myr
     fprintf(outfile,"DATASET STRUCTURED_POINTS\n");     
     fprintf(outfile,"DIMENSIONS %d %d %d \n",  w, h, 1);        
     fprintf(outfile,"SPACING 1.0 1.0 1.0\n");//or ASPECT_RATIO                            
-    fprintf(outfile,"ORIGIN %d %d 0\n", 0, (h - 0) * myrank );                                              
+    fprintf(outfile,"ORIGIN %d %d 0\n", 0, (h - 1) * myrank );                                              
     fprintf(outfile,"POINT_DATA %d\n", w*h);
     fprintf(outfile,"SCALARS data float 1\n");
     fprintf(outfile,"LOOKUP_TABLE default\n");
